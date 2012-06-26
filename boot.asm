@@ -104,3 +104,4 @@ SegCode32Len	equ	$ - LABEL_SEG_CODE32
 
 times (512 - SegCode16Len - SegCode32Len -GdtLen -16) db	0		; Fill the extra space of binary. Make it as long as 510 bytes.
 dw 0xaa55
+times 1474560-512 db 0
