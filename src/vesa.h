@@ -41,6 +41,7 @@ unsigned short vesa_get_point_color( unsigned int x , unsigned int y ) ;
 
 void vesa_print_chinese( unsigned int x , unsigned int y , unsigned int pos_in_font , unsigned short color );
 void vesa_print_english( unsigned int x , unsigned int y , unsigned int pos_in_font , unsigned short color );
+int vesa_print_integer( unsigned int x , unsigned int y , unsigned int in_integer , unsigned short color );
 
 // --------------------我是分割线---------------------
 // 上面是直接绘图，而下面是缓冲区绘图，推荐使用下面的 vesa_draw_buffer

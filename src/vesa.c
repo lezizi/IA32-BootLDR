@@ -178,6 +178,19 @@ void vesa_print_english( unsigned int x , unsigned int y , unsigned int pos_in_f
 	}
 }
 
+int vesa_print_integer( unsigned int x , unsigned int y , unsigned int in_integer , unsigned short color )
+{
+	int x_location ;
+	x_location= x;
+	int integer;
+	integer = in_integer; 
+	do {
+		vesa_print_english(x_location,y,integer % 10 +'0',color);
+		x_location -= 8;
+		integer = integer / 10;
+	} while (integer);
+	return x_location;
+}
 
 void vesa_print_chinese( unsigned int x , unsigned int y , unsigned int pos_in_font , unsigned short color )
 {

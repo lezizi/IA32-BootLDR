@@ -26,6 +26,7 @@ Copyright (C) 2012 LeZiZi Studio
 #include "io.h"
 #include "message.h"
 #include "graphic.h"
+#include "ata.h"
 
 struct message_message_queue_struct kernel_message_queue ;
 
@@ -45,10 +46,12 @@ static int window_y = 50;
 static unsigned short *old_picture ;
 static unsigned short *window_background ;
 static unsigned short *window_buffer ;
+static unsigned short *ata_buffer ;  //磁盘缓冲
 
 static int old_picture_width ;
 static int old_picture_height ;
 
+static int input_pos=0;
 static int input_offset_x=0;
 static int input_offset_y=0;
 
@@ -60,7 +63,6 @@ const int window_height = 380;
 *  implementation                       *
 *****************************************/
 
-
 void kernel_main()
 {
 	// 操作系统初始化
@@ -69,6 +71,7 @@ void kernel_main()
 	old_picture = ( unsigned short * )0x100000 ;		// 越过前面的只读内存区
 	window_background = ( unsigned short * )0x200000 ;	// 越过前面的只读内存区
 	window_buffer = ( unsigned short * )0x300000 ;		// 越过前面的只读内存区
+	ata_buffer= ( unsigned short * )0x400000 ;		// 越过前面的只读内存区
 
 	kernel_mouse_x_position = 444 ;
 	kernel_mouse_y_position = 300 ;
@@ -365,6 +368,8 @@ void kernel_logout()
 	struct message_message_struct message ;
 	message.message_type = MESSAGE_SHUTDOWN_COMPUTER ;
 	message_put_message( &kernel_message_queue , message ) ;
+	
+	io_write_to_io_port(0x64, 0xFE);
 }
 
 void kernel_new_window()
@@ -395,16 +400,19 @@ void kernel_new_window()
 	color = vesa_compound_rgb( 0 , 0 , 255 ) ;
 	buffer_draw_rect(window_buffer,window_width,window_height, 1 , 1 , window_width-1 , window_height-1 , color , 0 ) ;
 	buffer_draw_rect(window_buffer,window_width,window_height, 2 , 2 , window_width-2 , window_height-2 , color , 0 ) ;
-
-
-	// draw buffer to screen with mask DISABLED
-	vesa_draw_buffer(window_buffer,window_width,window_height,window_x,window_y ,color , 0 );
-		
+	
 	// reset keboard input offset
 	input_offset_x=0;
 	input_offset_y=0;
 
-	
+	// read form hard disk
+	notepad_print_ata_buffer(color);
+
+	// draw buffer to screen with mask DISABLED
+	vesa_draw_buffer(window_buffer,window_width,window_height,window_x,window_y ,color , 0 );
+		
+
+
 	// 显示 mouse , 因为可能在画棋盘时盖住了 mouse
 	mouse_show_mouse( kernel_mouse_x_position , kernel_mouse_y_position , kernel_mouse_type ) ;
 
@@ -412,24 +420,32 @@ void kernel_new_window()
 
 void kernel_close_window()
 {
+	//回写数据
+	ata_buffer[input_pos]=0;// set the last char to 0, indicating EOF
+	ata_open(0x1f0);
+	ata_write(0x1f0, 0x100, ata_buffer);
 	//重画桌面
 	kernel_login() ;
 }
 
-
-// 画登陆界面
-void kernel_draw_login_form() //0x90020
+void notepad_print_ata_buffer(unsigned short color)
 {
-	// 用白色清屏
-	unsigned short color = vesa_compound_rgb( 255 , 255 , 255 ) ;
-	vesa_clean_screen( color ) ;
-	// 显示第一幅图，所占矩形 ( 150 , 271 )-( 431 , 375 )
-	vesa_show_bmp_picture( 150 , 271 , ( void * )0x50000 , 0 , 0 ) ;
-	// 显示第二幅图
-	color = vesa_compound_rgb( 0 , 255 , 0 ) ;
-	vesa_show_bmp_picture( 457 , 225 , ( void * )0x60000 , color , 1 ) ;
-	// 显示 mouse
-	mouse_show_mouse( kernel_mouse_x_position , kernel_mouse_y_position , kernel_mouse_type ) ;  //0x900a3
+	ata_open(0x1f0);
+	ata_read(0x1f0, 0x100, ata_buffer);
+	int i = 0 ;
+	while(ata_buffer[i]!=0){
+		if (ata_buffer[i] == 13){ // enter
+			input_offset_x = 0;
+			input_offset_y += 18;
+		}
+		else
+		{
+			buffer_print_english(window_buffer,window_width,window_height,input_offset_x+window_border ,input_offset_y+window_border , ata_buffer[i] , color ) ;
+			input_offset_x+=8;
+		};
+		i++;
+	};
+	input_pos = i;
 }
 
 void input_handle( char ch )
@@ -440,30 +456,66 @@ void input_handle( char ch )
 	}
 	else if (ch == 8){ // backspace
 		// fill it with a 8*16 white rectangle
+		input_offset_x -= 8;
+		if (input_offset_x<0) {
+			input_offset_x = 296;
+			input_offset_y -= 18;
+		};
+
 		unsigned short color = vesa_compound_rgb( 255 , 255 , 255 ) ;
 		buffer_draw_rect(window_buffer,window_width,window_height,input_offset_x+window_border ,input_offset_y+window_border ,input_offset_x +window_border+ 8,window_y+ input_offset_y+window_border + 16, color,1 ) ;
 
 		// move the input offset
-		input_offset_x -= 8;
-		if (input_offset_x<0) {
-			input_offset_x = 300;
-			input_offset_y -= 18;
+
+		input_pos--;
+		if (input_pos<0) {
+			input_pos=0;//prevent overflow
+			input_offset_x = 0;
+			input_offset_y = 0;
 		};
-		
 	}
 	else if (ch == 13){ // enter
+		int input_pos_old = input_pos;
+		input_pos+=(296-input_offset_x)/8;
+		for (int filli=input_pos_old;filli<input_pos;filli++)
+		{
+			ata_buffer[filli]='.';
+		};
 		input_offset_x = 0;
 		input_offset_y += 18;
+		ata_buffer[input_pos]=ch;
+		input_pos++;
 	}
 	else {
-		input_offset_x += 8;
-		if (input_offset_x>300) {
-			input_offset_x = 0;
-			input_offset_y += 18;
-		};
 		unsigned short color = vesa_compound_rgb( 0 , 0 , 255 ) ;
 		buffer_print_english(window_buffer,window_width,window_height,input_offset_x+window_border ,input_offset_y+window_border , ch , color ) ;
+		input_offset_x += 8;
+		if (input_offset_x>296) {
+			input_offset_x = 0;
+			input_offset_y += 18;
+			ata_buffer[input_pos]=13;
+			input_pos++;
+		};
+		//写到缓冲区
+		ata_buffer[input_pos]=ch;
+		input_pos++;
 	}
 	// draw buffer to screen with mask DISABLED
 	vesa_draw_buffer(window_buffer,window_width,window_height,window_x,window_y,0,0);
+}
+
+// 画登陆界面
+void kernel_draw_login_form() //0x90020
+{
+	//ata_open(0x10e0);//10e0
+	// 用白色清屏
+	unsigned short color = vesa_compound_rgb( 255 , 255 , 255 ) ;
+	vesa_clean_screen( color ) ;
+	// 显示第一幅图，所占矩形 ( 150 , 271 )-( 431 , 375 )
+	vesa_show_bmp_picture( 150 , 271 , ( void * )0x50000 , 0 , 0 ) ;
+	// 显示第二幅图
+	color = vesa_compound_rgb( 0 , 255 , 0 ) ;
+	vesa_show_bmp_picture( 457 , 225 , ( void * )0x60000 , color , 1 ) ;
+	// 显示 mouse
+	mouse_show_mouse( kernel_mouse_x_position , kernel_mouse_y_position , kernel_mouse_type ) ;  //0x900a3
 }

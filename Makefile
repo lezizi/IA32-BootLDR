@@ -79,9 +79,13 @@ build/message.o: src/message.c
 	@echo Compiling message.o with gcc...
 	@gcc -fpack-struct -std=c99 -c src/message.c -o build/message.o
 
-build/kernel.ld: build/kernel.asmo build/kernel.o build/system.o build/vesa.o build/io.o build/interrupt.o build/interrupt.asmo build/keyboard.o build/keyboard.asmo build/message.o build/mouse.o build/mouse.asmo build/graphic.o
+build/ata.o: src/ata.c
+	@echo Compiling ata.o with gcc...
+	@gcc -fpack-struct -std=c99 -c src/ata.c -o build/ata.o
+
+build/kernel.ld: build/kernel.asmo build/kernel.o build/system.o build/vesa.o build/io.o build/interrupt.o build/interrupt.asmo build/keyboard.o build/keyboard.asmo build/message.o build/mouse.o build/mouse.asmo build/graphic.o build/ata.o
 	@echo Linking kernel...
-	@ld -o build/kernel.ld -Ttext 0x90000 -e main build/kernel.asmo build/kernel.o build/system.o build/vesa.o build/io.o build/interrupt.o build/interrupt.asmo build/keyboard.o build/keyboard.asmo build/message.o build/mouse.o build/mouse.asmo build/graphic.o
+	@ld -o build/kernel.ld -Ttext 0x90000 -e main build/kernel.asmo build/kernel.o build/system.o build/vesa.o build/io.o build/interrupt.o build/interrupt.asmo build/keyboard.o build/keyboard.asmo build/message.o build/mouse.o build/mouse.asmo build/graphic.o  build/ata.o
 
 build/kernel.bin: build/kernel.ld
 	@echo Removing extra sections added by 'ld -o'... 
