@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2012 LeZiZi Studio
+Copyright (C) 2013 LeZiZi Studio
  
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -106,14 +106,14 @@ void mouse_handle_for_mouse_interrupt()
 			message_put_message( &kernel_message_queue , message );
 			break;
 		case 2 :
-			x_position += ( x_sign | ch ) ;
+			x_position += ( x_sign | ch ) *2;
 			// avoid moving mouse out of the screen, which may cause overflow
 			if (x_position<0) x_position=0;
 			if (x_position>800-10) x_position=800-10;
 			message.x_position = x_position ;
 			break ;
 		case 3 :
-			y_position += -( y_sign | ch ) ;
+			y_position += -( y_sign | ch ) *2;
 			count = 0 ;
 			// avoid moving mouse out of the screen, which may cause overflow
 			if (y_position<0) y_position=0;

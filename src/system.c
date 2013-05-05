@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2012 LeZiZi Studio
+Copyright (C) 2013 LeZiZi Studio
  
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,16 +66,16 @@ static struct system_gdt_descriptor_struct system_gdt_descriptor ;
 void system_init()  
 {
 	// 由于以后可能向 gdt 表中增添项目,因此,此处应重新初始化 gdt 表,以保存 gdt 表位置
+	
 	system_init_gdt() ;
 	
-	// 初始化中断
 	interrupt_init() ;
 	
-	// 初始化键盘
 	keyboard_init() ;
 	
-	// 初始化 mouse
 	mouse_init() ;
+	
+	interrupt_open_interrupt() ;
 }
 
 /* 改写 gdt 表 */

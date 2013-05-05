@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2012 LeZiZi Studio
+Copyright (C) 2013 LeZiZi Studio
  
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ void kernel_main()
 {
 	// 操作系统初始化
 	system_init() ;  //0x903ae
-	
+
 	old_picture = ( unsigned short * )0x100000 ;		// 越过前面的只读内存区
 	window_background = ( unsigned short * )0x200000 ;	// 越过前面的只读内存区
 	window_buffer = ( unsigned short * )0x300000 ;		// 越过前面的只读内存区
@@ -91,9 +91,7 @@ void kernel_main()
 	// 初始化消息队列
 	message_init_message_queue( &kernel_message_queue ) ;
 
-	// 开中断
-	interrupt_open_interrupt() ;
-
+	
 	struct message_message_struct message ;
 
 	kernel_kernel_state = KERNEL_WAIT_USER_LOGIN ;
@@ -120,7 +118,6 @@ void kernel_main()
 					if( message.dose_left_button_down && kernel_mouse_type == MOUSE_OVER_MOUSE ){
 						kernel_login() ;
 					}
-					// 检测是否需要移动 mouse
 					else if( kernel_mouse_x_position != message.x_position || kernel_mouse_y_position != message.y_position ){
 						// 检测是否需要改变 mouse 形状
 						if( kernel_does_point_in_rect( message.x_position , message.y_position , 150 , 271 , 431 , 375 ) ){
@@ -129,10 +126,6 @@ void kernel_main()
 						else{
 							kernel_mouse_type = MOUSE_NORMAL_MOUSE ;
 						}
-						// refresh mouse display
-						mouse_move_mouse( kernel_mouse_x_position , kernel_mouse_y_position , message.x_position , message.y_position , kernel_mouse_type ) ;
-						kernel_mouse_x_position = message.x_position ;
-						kernel_mouse_y_position = message.y_position ;
 					}
 				}
 				else if( kernel_kernel_state == KERNEL_USER_LOGED_IN || kernel_kernel_state == KERNEL_window ){
@@ -223,12 +216,6 @@ void kernel_main()
 
 						// draw buffer to screen with mask DISABLED
 						vesa_draw_buffer(window_buffer,window_width,window_height,window_x,window_y ,0 , 0 );
-
-						//干脆就直接更新了，不受通用移动程序管理
-						mouse_move_mouse( kernel_mouse_x_position , kernel_mouse_y_position , message.x_position , message.y_position , kernel_mouse_type ) ;
-						kernel_mouse_x_position = message.x_position ;
-						kernel_mouse_y_position = message.y_position ;
-
 					}
 					
 					// 检测是否需要退出
@@ -273,20 +260,16 @@ void kernel_main()
 					else{
 						kernel_mouse_type = MOUSE_NORMAL_MOUSE ;
 					}
+					}
 					// 重画 mouse
 					if ((kernel_mouse_x_position != message.x_position)||(kernel_mouse_y_position != message.y_position)) {
 						mouse_move_mouse( kernel_mouse_x_position , kernel_mouse_y_position , message.x_position , message.y_position , kernel_mouse_type ) ;
 						kernel_mouse_x_position = message.x_position ;
 						kernel_mouse_y_position = message.y_position ;
 					}
-					}
 					break ;
 				}
 		}
-	// 停机
-	for( ;; ){
-		__asm__( "hlt" ) ;
-	}
 }
 
 
@@ -315,7 +298,7 @@ void kernel_login()
 
 	// 显示英文
 	color = vesa_compound_rgb( 0 , 0 , 255 ) ;
-	const char string[]  = "A Framework IA32 [Copyright (C) 2012 LeZiZi Studio]"; 
+	const char string[]  = "A Framework IA32 [Copyright (C) 2013 LeZiZi Studio]"; 
 	// when using this, -fno-stack-protector must be included in the Makefile
 	for( int i = 0 ; i < 52 ; ++i ){
 		vesa_print_english(383+i*8 , 552 , string[i] , color ) ;
@@ -410,9 +393,7 @@ void kernel_new_window()
 
 	// draw buffer to screen with mask DISABLED
 	vesa_draw_buffer(window_buffer,window_width,window_height,window_x,window_y ,color , 0 );
-		
-
-
+	
 	// 显示 mouse , 因为可能在画棋盘时盖住了 mouse
 	mouse_show_mouse( kernel_mouse_x_position , kernel_mouse_y_position , kernel_mouse_type ) ;
 
@@ -423,7 +404,7 @@ void kernel_close_window()
 	//回写数据
 	ata_buffer[input_pos]=0;// set the last char to 0, indicating EOF
 	ata_open(0x1f0);
-	ata_write(0x1f0, 0x100, ata_buffer);
+	ata_write( 0x1f0,  0x100, ata_buffer);
 	//重画桌面
 	kernel_login() ;
 }
@@ -431,7 +412,7 @@ void kernel_close_window()
 void notepad_print_ata_buffer(unsigned short color)
 {
 	ata_open(0x1f0);
-	ata_read(0x1f0, 0x100, ata_buffer);
+	ata_read(0x1f0,  0x100, ata_buffer);
 	int i = 0 ;
 	while(ata_buffer[i]!=0){
 		if (ata_buffer[i] == 13){ // enter
