@@ -5,16 +5,16 @@ A Framework (AF) for IA32 processors.
 
 ## What is A Framework?
 
-AF is usually regraded as the runtime environment of APL. However, AF does much more than that atctually.
+A Framework is a pack of Basic Actions and Strategies needed in an Action Oriented application. To put it simply, it does what the runtime environment of a generic programming language does.
 
 ## What is AF-IA32?
 
-Unlike AF for windows, AF-IA32 is a standalone minimum kernel which can run on IA32 processors without support of any OS.
+Unlike A Framework for Windows or other operating systems, AF-IA32 is a standalone kernel which connects your application with IA32 processors, and PC hardware.
 
-## What is included in the latest TP1 (technology preview)?
+## What is included in the latest TP2 (technology preview II)?
 
-We have realized the basic action needed for AF to communicate with BIOS, video graphic card. It might be the only part of AF-IA32 that is written in C rather than APL. And we have created a notepad application, although it hasn't been an Action Oriented app yet, to demonstrate that Video Buffer and Interrupt Handler is functioning well.
+We have implemented the basic Actions needed to communicate with BIOS, video graphic card and ATA hard disk drive. It might be the only part of AF-IA32 that is written in C rather than APL. And we have created a notepad application, although it hasn't been an Action Oriented application yet, to demonstrate that all the C code written is functioning well.
 
-## What is going to take place in TP2 and other TPs to come?
+## What is going to take place in TP3 and other TPs to come?
 
-In TP2, we will bring hard disk feature into AF. And in the near future, we will rewritten Video Buffer in APL.
+TP3 may come with a HDD boot-up support. And in the near future, we will add a code loader.
