@@ -59,6 +59,16 @@ const int window_border = 25;
 const int window_width = 360;
 const int window_height = 380;
 
+// function forward declarations
+void kernel_draw_login_form();
+void input_handle( char ch );
+void kernel_login();
+int kernel_does_point_in_rect( int x , int y , int x1 , int y1 , int x2 , int y2 );
+void kernel_new_window();
+void kernel_close_window();
+void kernel_logout();
+void notepad_print_ata_buffer(unsigned short color);
+
 /****************************************
 *  implementation                       *
 *****************************************/

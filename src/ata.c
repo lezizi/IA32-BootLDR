@@ -24,6 +24,7 @@ void ata_open ( unsigned short IOBase)
 {
 	io_write_to_io_port(IOBase + 7, 0x95);
 }
+
 void ata_read ( unsigned short IOBase, unsigned char blockNumber, unsigned short* buffer)
 {
 	io_write_to_io_port(IOBase + 6, 0xE0 | (blockNumber >> 24) & 0xf); // LBA, master,
@@ -43,7 +44,8 @@ void ata_read ( unsigned short IOBase, unsigned char blockNumber, unsigned short
 		//((short *)buffer)[i] = io_read_from_io_port(IOBase +1);
 	}
 	
-};
+}
+
 void ata_write ( unsigned short IOBase, unsigned char blockNumber, unsigned short* buffer)
 {
 	io_write_to_io_port(IOBase + 6, 0xE0 | (blockNumber >> 24) & 0xf); // LBA, master,
@@ -63,4 +65,5 @@ void ata_write ( unsigned short IOBase, unsigned char blockNumber, unsigned shor
 		//((short *)buffer)[i] = io_read_from_io_port(IOBase +1);
 	}
 	
-};
+}
+

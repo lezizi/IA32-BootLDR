@@ -19,6 +19,7 @@
 [BITS 32]
 [GLOBAL main]
 [EXTERN kernel_main]
+main:
 	mov				ax , 0x10
 	mov				ds , ax
 	mov				es , ax
