@@ -13,7 +13,7 @@
 ;   limitations under the License.
 
 ; ==========================================
-;         Interrupt Hander (wrapper)
+;          Default Interrupt Hander 
 ; ==========================================
 [BITS 32]
 [GLOBAL interrupt_asm_default_handle_for_interrupt]

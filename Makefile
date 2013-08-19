@@ -120,8 +120,8 @@ res/ch.font: build/make_font
 	build/make_font res/hzk16 res/ch.font
 
 clean:
-	rm bin -r
-	rm build -r
-	mkdir bin
-	mkdir build
+	-rm bin -r
+	-rm build -r
+	-mkdir bin
+	-mkdir build
 

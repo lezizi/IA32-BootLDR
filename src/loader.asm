@@ -261,6 +261,7 @@ main:
 	or	eax, 1
 	mov	cr0, eax
 	; jump to 32-bits code section
+	; [GDTSelector]:[16-bits-section]*0x10
 	jmp dword         0x8:0x90000
 	
 times 1024-($-$$) db 0

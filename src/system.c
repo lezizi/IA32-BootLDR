@@ -47,7 +47,7 @@ struct system_gdt_item_struct{
 struct system_gdt_struct{ 
 	struct system_gdt_item_struct null_seg ;		// 空段，Intel保留
 	struct system_gdt_item_struct system_code_seg ;	// 系统代码段
-	struct system_gdt_item_struct system_date_seg ;	// 系统数据段  
+	struct system_gdt_item_struct system_data_seg ;	// 系统数据段  
 } ;
 
 /* GDT 描述符结构 */
@@ -98,8 +98,8 @@ static void system_init_gdt()
 	p->type = 0x9a ;
 	
 	// 初始化系统数据段
-	system_gdt.system_date_seg = system_gdt.system_code_seg ;
-	system_gdt.system_date_seg.type = 0x92 ;
+	system_gdt.system_data_seg = system_gdt.system_code_seg ;
+	system_gdt.system_data_seg.type = 0x92 ;
 	
 	// 初始化 gdt 表描述符
 	system_gdt_descriptor.gdt_addr = &system_gdt ;
